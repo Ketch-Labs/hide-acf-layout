@@ -11,24 +11,21 @@
  * License GPL2
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+ // If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+define( 'HIDE_ACF_LAYOUT_PLUGIN_NAME',               'Hide ACF Layout');
+define( 'HIDE_ACF_LAYOUT_FD_FILE',                  __FILE__ );
+define( 'HIDE_ACF_LAYOUT_PLUGIN_FOLDER',             plugin_dir_path( __FILE__ ));
 
 class ACF_Hide_Layout {
 
-	/**
-	 * The single instance of the class.
-	 */
 	protected static $instance = null;
-
-	/**
-	 * Field key.
-	 */
 	protected $field_key = 'acf_hide_layout';
-
-	/**
-	 * Layouts that will be hidden.
-	 */
 	protected $hidden_layouts = [];
+	protected $dashboard_screen_name;
 
 	/**
 	 * A dummy magic method to prevent class from being cloned.
@@ -113,22 +110,47 @@ class ACF_Hide_Layout {
 	 * Hook into actions and filters.
 	 */
 	private function init_hooks() {
-		add_action( 'init', [ $this, 'init' ], 0 );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-		add_action( 'admin_footer', [ $this, 'admin_footer'] );
-		add_filter( 'acf/load_value/type=flexible_content', [ $this, 'load_value'], 10, 3 );
-		add_filter( 'acf/update_value/type=flexible_content', [ $this, 'update_value'], 10, 4 );
+		add_action( 'init', [$this,'init'], 0 );
+		add_action( 'admin_enqueue_scripts', [$this,'enqueue_scripts'] );
+		add_action( 'admin_footer', [$this,'admin_footer'] );
+		add_filter( 'acf/load_value/type=flexible_content', [$this,'load_value'], 10, 3 );
+		add_filter( 'acf/update_value/type=flexible_content', [$this,'update_value'], 10, 4 );
+		add_action('admin_menu', [$this,'PluginMenu'] );
 	}
 
 	/**
-	 * Init when WordPress Initialises.
+	 * Set up menu for plugin
+	 */
+	public function PluginMenu()
+	{
+		$this->dashboard_screen_name =
+			add_submenu_page(
+				'tools.php',
+				HIDE_ACF_LAYOUT_PLUGIN_NAME,
+				HIDE_ACF_LAYOUT_PLUGIN_NAME,
+				'manage_options',
+				HIDE_ACF_LAYOUT_FD_FILE,
+				array($this, 'RenderPage'),
+		);
+	}
+
+	/**
+	* Admin page
+	*/
+	public function RenderPage()
+	{
+		include("modules/admin.php");
+	}
+
+	/**
+	 * Init when WordPress Initialises
 	 */
 	public function init() {
 		load_plugin_textdomain( 'hide-acf-layout', false, plugin_basename( dirname( $this->file ) ) . '/languages' );
 	}
 
 	/**
-	 * Enqueue scripts.
+	 * Enqueue scripts
 	 */
 	public function enqueue_scripts() {
 		$assets_url     = $this->get_plugin_url() . 'assets/';
@@ -139,7 +161,7 @@ class ACF_Hide_Layout {
 	}
 
 	/**
-	 * Add script options.
+	 * Add script options
 	 */
 	public function admin_footer() {
 
@@ -154,13 +176,13 @@ class ACF_Hide_Layout {
 	}
 
 	/**
-	 * Load Localisation files.
+	 * Load Localisation files
 	 */
 	public function load_plugin_textdomain() {
 	}
 
 	/**
-	 * Remove layouts that are hidden from frontend.
+	 * Remove layouts that are hidden from frontend
 	 */
 	public function load_value( $layouts, $post_id, $field ) {
 
@@ -197,7 +219,7 @@ class ACF_Hide_Layout {
 	}
 
 	/**
-	 * Update the field acf_hide_layout value.
+	 * Update the field acf_hide_layout value
 	 */
 	public function update_value( $rows, $post_id, $field, $original ) {
 
