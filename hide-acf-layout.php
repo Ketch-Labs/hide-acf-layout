@@ -116,6 +116,9 @@ class ACF_Hide_Layout {
 		add_filter( 'acf/load_value/type=flexible_content', [$this,'load_value'], 10, 3 );
 		add_filter( 'acf/update_value/type=flexible_content', [$this,'update_value'], 10, 4 );
 		add_action('admin_menu', [$this,'PluginMenu'] );
+
+		add_action( 'admin_menu', array( $this, 'hide_acf_setting_add_plugin_page' ) );
+        add_action( 'admin_init', array( $this, 'hide_acf_setting_page_init' ) );
 	}
 
 	/**
@@ -123,31 +126,80 @@ class ACF_Hide_Layout {
 	 */
 	public function PluginMenu()
 	{
-		$this->dashboard_screen_name =
-			add_submenu_page(
-				'tools.php',
-				HIDE_ACF_LAYOUT_PLUGIN_NAME,
-				HIDE_ACF_LAYOUT_PLUGIN_NAME,
-				'manage_options',
-				HIDE_ACF_LAYOUT_FD_FILE,
-				array($this, 'RenderPage'),
-		);
+		add_submenu_page(
+			'tools.php',
+            HIDE_ACF_LAYOUT_PLUGIN_NAME,
+            HIDE_ACF_LAYOUT_PLUGIN_NAME,
+            'manage_options',
+            'dropdown-option-setting',
+            array( $this, 'hide_acf_setting_create_admin_page' )
+        );
 	}
 
-	/**
-	* Admin page
-	*/
-	public function RenderPage()
-	{
-		include("modules/admin.php");
-	}
+	public function hide_acf_setting_create_admin_page() {
+        $this->hide_acf_setting_options = get_option( 'hide_acf_setting_option_name' ); ?>
 
-	/**
-	 * Init when WordPress Initialises
-	 */
-	public function init() {
-		load_plugin_textdomain( 'hide-acf-layout', false, plugin_basename( dirname( $this->file ) ) . '/languages' );
-	}
+        <div class="wrap">
+            <h2>Hide ACF Setting</h2>
+            <p></p>
+            <?php settings_errors(); ?>
+
+            <form method="post" action="options.php">
+                <?php
+                    settings_fields( 'hide_acf_setting_option_group' );
+                    do_settings_sections( 'hide-acf-option-setting-admin' );
+                    submit_button();
+                ?>
+            </form>
+        </div>
+    <?php }
+
+	public function hide_acf_setting_page_init() {
+        register_setting(
+            'hide_acf_setting_option_group', // option_group
+            'hide_acf_setting_option_name', // option_name
+            array( $this, 'hide_acf_setting_sanitize' ) // sanitize_callback
+        );
+
+        add_settings_section(
+            'hide_acf_setting_setting_section', // id
+            'Settings', // title
+            array( $this, 'hide_acf_setting_section_info' ), // callback
+            'hide-acf-option-setting-admin' // page
+        );
+
+        add_settings_field(
+            'hide_acf_settings', // id
+            'Logged in status', // title
+            array( $this, 'hide_acf_settings_callback' ), // callback
+            'hide-acf-option-setting-admin', // page
+            'hide_acf_setting_setting_section' // section
+        );
+    }
+
+	public function hide_acf_setting_sanitize($input) {
+        $sanitary_values = array();
+        if ( isset( $input['hide_acf_settings'] ) ) {
+            $sanitary_values['hide_acf_settings'] = $input['hide_acf_settings'];
+        }
+
+        return $sanitary_values;
+    }
+
+    public function hide_acf_setting_section_info() {
+
+    }
+
+    public function hide_acf_settings_callback() {
+        ?>
+		<select name="hide_acf_setting_option_name[hide_acf_settings]" id="hide_acf_settings">
+            <?php $selected = (isset( $this->hide_acf_setting_options['hide_acf_settings'] ) && $this->hide_acf_setting_options['hide_acf_settings'] === 'hide-module') ? 'selected' : '' ; ?>
+            <option value="hide-module" <?php echo $selected; ?>>Hide When Logged in</option>
+            <?php $selected = (isset( $this->hide_acf_setting_options['hide_acf_settings'] ) && $this->hide_acf_setting_options['hide_acf_settings'] === 'show-module') ? 'selected' : '' ; ?>
+            <option value="show-module" <?php echo $selected; ?>>Show when logged in</option>
+        </select>
+		<?php
+    }
 
 	/**
 	 * Enqueue scripts
@@ -175,11 +227,6 @@ class ACF_Hide_Layout {
 		wp_localize_script( 'hide-acf-layout', 'acf_hide_layout_options', $args );
 	}
 
-	/**
-	 * Load Localisation files
-	 */
-	public function load_plugin_textdomain() {
-	}
 
 	/**
 	 * Remove layouts that are hidden from frontend
@@ -208,10 +255,24 @@ class ACF_Hide_Layout {
 				// used only on admin for javascript
 				$this->set_hidden_layout( $field['key'], $row );
 
-				// hide layout on frontend
-				if ( ( ! is_admin() || wp_doing_ajax() ) && ! defined( 'DOING_CRON' ) && ! wp_is_json_request() && ! is_user_logged_in() ) {
-					unset( $layouts[ $row ] );
+
+        		$hide_acf_setting_options = get_option( 'hide_acf_setting_option_name' );
+				if(isset( $hide_acf_setting_options['hide_acf_settings'] ) && $hide_acf_setting_options['hide_acf_settings'] === 'show-module'){
+					// hide layout on frontend
+
+					if ( ( ! is_admin() || wp_doing_ajax() ) && ! defined( 'DOING_CRON' ) && ! wp_is_json_request() && ! is_user_logged_in() ) {
+						unset( $layouts[ $row ] );
+					}
+
+				} else {
+					// hide layout on frontend
+					if ( ( ! is_admin() || wp_doing_ajax() ) && ! defined( 'DOING_CRON' ) && ! wp_is_json_request() ) {
+						unset( $layouts[ $row ] );
+					}
 				}
+
+
+
 			}
 		}
 
