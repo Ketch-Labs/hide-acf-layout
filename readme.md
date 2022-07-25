@@ -6,7 +6,7 @@
 <br />
 <div align="center">
 	<img src="assets/img/icon.png" alt="Logo" width="80" height="80">
-  	<h3 align="center">Fine Dashboard</h3>
+  	<h3 align="center">Hide ACF Layout</h3>
  	 <p align="center">
     	Hide a module in ACF flexible content on the frontend but still keep it in the backend
    		<br />
