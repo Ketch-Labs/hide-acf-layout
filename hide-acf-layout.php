@@ -3,7 +3,7 @@
  * Plugin Name: Hide ACF Layout
  * Description: Hide a module in ACF flexible content on the frontend but still keep it in the backend.
  * Tags: acf, advanced custom fields, flexible content, hide layout
- * Version: 1.1
+ * Version: 1.0
  * Author: Ketchlabs
  * Author URI: https://lukeketchen.com/
  * Text Domain: hide-acf-layout
