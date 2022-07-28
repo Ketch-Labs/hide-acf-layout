@@ -31,6 +31,10 @@ The ACF Hide Layout settings will show under "Tools" if on localhost.
 Luke Ketchen - lukeketchen.com
 Project Link: https://github.com/Ketch-Labs/hide-acf-layout
 
+= Screenshots =
+1. Page view normal.
+2. Page view hidden module.
+3. Settigns page.
 
 = Acknowledgments =
 Hiding icons created by Freepik - Flaticon (https://www.flaticon.com/free-icons/hiding)
