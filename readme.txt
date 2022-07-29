@@ -24,7 +24,7 @@ Toggling that option will hide or show the layout on the fronted.
 
 
 = Usage =
-The ACF Hide Layout settings will show under "Tools" if on localhost.
+The Hide ACF Layout settings will show under "Tools" if on localhost.
 
 
 = Contact =
